@@ -75,7 +75,7 @@ input[disabled] {
 <script src="/socket.io/socket.io.js"></script>
 <script>
 /* global $, io */
-var URL = ':8081/web';
+var URL = ':' + location.port + '/web';
 var $connection = $('#connection');
 var $connectionSpan = $connection.find('span');
 var $arduino = $('#arduino');
