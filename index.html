@@ -1,70 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Web interface to Tower Bridge Arduino">
+  <meta name="author" content="Giulia Alfonsi @electric_g">
   <title>Tower Bridge Arduino</title>
 <style>
 body {
+  font-family: sans-serif;
+  font-size: 5vh;
   text-align: center;
+  margin: 0 auto;
+  max-width: 500px;
+  padding: 1rem 1rem 0;
 }
-#status {
-  font-size: 2em;
-  margin: 20px;
-  padding: 1em;
-  text-align: center;
+h1 {
+  font-size: 6vh;
 }
-.error {
+div {
   background: #F00;
   color: #FFF;
+  margin: 1rem 0;
+  padding: 1rem 0;
 }
-.ok {
+#arduino {
+  display: none;
+}
+.on {
   background: #0F0;
-  color: #FFF;
-}
-#up, #down {
-  background: #CCC;
-  border: 1px solid #000;
   color: #000;
+}
+input {
+  background: #09F;
+  border: 1px solid #004C7F;
+  color: #004C7F;
+  cursor: pointer;
   display: block;
-  font-size: 3em;
-  margin: 20px auto;
-  padding: 1em;
+  font-family: inherit;
+  font-size: inherit;
+  margin: 1rem auto 0;
+  padding: 1rem 0;
+  text-transform: uppercase;
+  width: 100%;
+}
+input:hover, input:focus, input:active {
+  background: #004C7F;
+  color: #09F;
+  outline: 0 none;
 }
 </style>
 </head>
 <body>
 
-<div id="status">Status</div>
-<input type="button" id="up" value="up">
-<input type="button" id="down" value="down">
+<h1>Tower Bridge Arduino</h1>
+<div id="connection">You are <span>disconnected</span></div>
+<div id="arduino">Arduino is <span>offline</span></div>
+<input type="button" id="up" value="go up">
+<input type="button" id="down" value="go down">
 
 <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-var $status = $('#status');
+/* global $, io */
+var $connection = $('#connection');
+var $connectionSpan = $connection.find('span');
+var $arduino = $('#arduino');
+var $arduinoSpan = $arduino.find('span');
 var $up = $('#up');
 var $down = $('#down');
 
-var socket = io('http://localhost:8081');
+var socket = io.connect(':8081');
 
-socket.on('move', function(e) {
-  console.log('got a move');
-});
+socket
+  .on('connect', function() {
+    $connection.toggleClass('on', true);
+    $connectionSpan.html('connected');
+    $arduino.show();
+  })
+  .on('disconnect', function() {
+    $connection.toggleClass('on', false);
+    $connectionSpan.html('disconnected');
+    $arduino.hide();
+  })
+  .on('move', function() {
+    console.log('got a move');
+  })
+  .on('board', function(data) {
+    console.log('board ' + data.status);
 
-socket.on('board', function(data) {
-  console.log('board ' + data.status);
-
-  if (data.status === 'ready') {
-    $status
-      .addClass('ok')
-      .removeClass('error');
-  }
-  else {
-    $status
-      .addClass('error')
-      .removeClass('ok');
-  }
-});
+    if (data.status === 'ready') {
+      $arduino.toggleClass('on', true);
+      $arduinoSpan.html('ready');
+    }
+    else {
+      $arduino.toggleClass('on', false);
+      $arduinoSpan.html('offline');
+    }
+  });
 
 $up.on('click', function() {
   socket.emit('up');
