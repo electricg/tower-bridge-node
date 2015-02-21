@@ -18,19 +18,34 @@ function handler (req, res) {
   });
 }
 
-io.on('connection', function(socket) {
-  socket.on('up', function() {
-    console.log('up');
-    socket.broadcast.emit('move', {dir: 'up'});
-  });
+var webIo = io.of('/web');
+var arduinoIo = io.of('/arduino');
+var arduino = {
+  status: 'offline'
+};
 
-  socket.on('down', function() {
-    console.log('down');
-    socket.broadcast.emit('move', {dir: 'down'});
-  });
+webIo.on('connection', function(socket) {
+  socket
+    .on('up', function() {
+      arduinoIo.emit('move', {dir: 'up'});
+    })
+    .on('down', function() {
+      arduinoIo.emit('move', {dir: 'down'});
+    })
+    .on('board', function() {
+      socket.emit('board', arduino); // to the web client that made the request
+      socket.broadcast.emit('board', arduino); // to every web client
+    });
+});
 
-  socket.on('board', function(data) {
-    console.log('board ' + data.status);
-    socket.broadcast.emit('board', data);
-  });
+arduinoIo.on('connection', function(socket) {
+  socket
+    .on('board', function(data) {
+      arduino = data;
+      webIo.emit('board', arduino);
+    })
+    .on('disconnect', function() {
+      arduino.status = 'offline';
+      webIo.emit('board', arduino);
+    });
 });

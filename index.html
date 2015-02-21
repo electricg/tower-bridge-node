@@ -29,8 +29,12 @@ div {
 #arduino {
   display: none;
 }
-.on {
+.on, #arduino[data-status=ready] {
   background: #0F0;
+  color: #000;
+}
+#arduino[data-status=moving] {
+  background: #F90;
   color: #000;
 }
 input {
@@ -51,6 +55,12 @@ input:hover, input:focus, input:active {
   color: #09F;
   outline: 0 none;
 }
+input[disabled] {
+  background: #CCC;
+  border-color: #AAA;
+  color: #AAA;
+  cursor: initial;
+}
 </style>
 </head>
 <body>
@@ -58,46 +68,54 @@ input:hover, input:focus, input:active {
 <h1>Tower Bridge Arduino</h1>
 <div id="connection">You are <span>disconnected</span></div>
 <div id="arduino">Arduino is <span>offline</span></div>
-<input type="button" id="up" value="go up">
-<input type="button" id="down" value="go down">
+<input type="button" id="up" value="go up" disabled>
+<input type="button" id="down" value="go down" disabled>
 
 <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
 /* global $, io */
+var URL = ':8081/web';
 var $connection = $('#connection');
 var $connectionSpan = $connection.find('span');
 var $arduino = $('#arduino');
 var $arduinoSpan = $arduino.find('span');
 var $up = $('#up');
 var $down = $('#down');
+var $inputs = $('input');
 
-var socket = io.connect(':8081');
+var socket = io.connect(URL);
 
 socket
   .on('connect', function() {
     $connection.toggleClass('on', true);
     $connectionSpan.html('connected');
     $arduino.show();
+    socket.emit('board');
   })
   .on('disconnect', function() {
     $connection.toggleClass('on', false);
     $connectionSpan.html('disconnected');
     $arduino.hide();
   })
-  .on('move', function() {
-    console.log('got a move');
-  })
   .on('board', function(data) {
-    console.log('board ' + data.status);
+    var status = data.status;
+    console.log('board ' + status);
 
-    if (data.status === 'ready') {
-      $arduino.toggleClass('on', true);
+    if (status === 'ready') {
+      $arduino.attr('data-status', 'ready');
       $arduinoSpan.html('ready');
+      $inputs.prop('disabled', false);
+    }
+    else if (status === 'moving') {
+      $arduino.attr('data-status', 'moving');
+      $arduinoSpan.html('going ' + data.dir);
+      $inputs.prop('disabled', true);
     }
     else {
-      $arduino.toggleClass('on', false);
+      $arduino.attr('data-status', 'offline');
       $arduinoSpan.html('offline');
+      $inputs.prop('disabled', true);
     }
   });
 
