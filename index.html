@@ -42,7 +42,7 @@ input {
   border: 1px solid #004C7F;
   color: #004C7F;
   cursor: pointer;
-  display: block;
+  display: none;
   font-family: inherit;
   font-size: inherit;
   margin: 1rem auto 0;
@@ -97,6 +97,7 @@ socket
     $connection.toggleClass('on', false);
     $connectionSpan.html('disconnected');
     $arduino.hide();
+    $inputs.prop('disabled', true).hide();
   })
   .on('board', function(data) {
     var status = data.status;
@@ -105,7 +106,7 @@ socket
     if (status === 'ready') {
       $arduino.attr('data-status', 'ready');
       $arduinoSpan.html('ready');
-      $inputs.prop('disabled', false);
+      $inputs.prop('disabled', false).show();
     }
     else if (status === 'moving') {
       $arduino.attr('data-status', 'moving');
@@ -115,7 +116,7 @@ socket
     else {
       $arduino.attr('data-status', 'offline');
       $arduinoSpan.html('offline');
-      $inputs.prop('disabled', true);
+      $inputs.prop('disabled', true).hide();
     }
   });
 
