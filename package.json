@@ -1,13 +1,23 @@
 {
-  "name": "node_app",
+  "name": "tower-bridge",
   "version": "1.0.0",
-  "description": "node server for socket.io",
-  "main": "server.js",
-  "scripts": {
-    "start": "server.js"
+  "description": "Server to communicate with Tower Bridge Arduino",
+  "author": {
+    "name": "Giulia Alfonsi",
+    "web": "http://giugee.com"
   },
-  "author": "Giulia Alfonsi",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "main": "server.js",
+  "homepage": "http://tower-bridge.herokuapp.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/electricg/tower-bridge-node"
+  },
   "dependencies": {
     "socket.io": "^1.3.4"
-  }
+  },
+  "private": true,
+  "license": "MIT"
 }
