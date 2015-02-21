@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tower Bridge Arduino</title>
+<style>
+body {
+  text-align: center;
+}
+#status {
+  font-size: 2em;
+  margin: 20px;
+  padding: 1em;
+  text-align: center;
+}
+.error {
+  background: #F00;
+  color: #FFF;
+}
+.ok {
+  background: #0F0;
+  color: #FFF;
+}
+#up, #down {
+  background: #CCC;
+  border: 1px solid #000;
+  color: #000;
+  display: block;
+  font-size: 3em;
+  margin: 20px auto;
+  padding: 1em;
+}
+</style>
+</head>
+<body>
+
+<div id="status">Status</div>
+<input type="button" id="up" value="up">
+<input type="button" id="down" value="down">
+
+<script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+var $status = $('#status');
+var $up = $('#up');
+var $down = $('#down');
+
+var socket = io('http://localhost:8081');
+
+socket.on('move', function(e) {
+  console.log('got a move');
+});
+
+socket.on('board', function(data) {
+  console.log('board ' + data.status);
+
+  if (data.status === 'ready') {
+    $status
+      .addClass('ok')
+      .removeClass('error');
+  }
+  else {
+    $status
+      .addClass('error')
+      .removeClass('ok');
+  }
+});
+
+$up.on('click', function() {
+  socket.emit('up');
+});
+$down.on('click', function() {
+  socket.emit('down');
+});
+
+</script>
+
+</body>
+</html>
